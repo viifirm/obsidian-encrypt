@@ -1,3 +1,11 @@
+# Meld Encrypt+
+⚠️ ATTENTION ⚠️
+USE AT YOUR OWN RISK! PLEASE SAVE YOUR PASSWORD SAFELY!
+
+This plugin is a modified version of the original [Meld Encrypt](https://github.com/meld-cp/obsidian-encrypt) plugin. Now you can use the right click menu of folder to encrypt the entire folder. For the simplicity consideration, I remove the session password decrypt for folder senario. To decrypt the folder must input password by hands.
+
+The consistancy is not optimized yet. Meanwhile if you have encrypted file using differnet password compare with the folder one, the decryption of folder will failed.
+
 # Obsidian Encrypt Plugin
 
 **Create encrypted notes within your [Obsidian.md](https://obsidian.md/) vault.**

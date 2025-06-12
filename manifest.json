@@ -1,14 +1,13 @@
 {
-	"id": "meld-encrypt",
-	"name": "Meld Encrypt",
-	"version": "2.4.0",
+	"id": "meld-encrypt-mod",
+	"name": "Meld Encrypt+",
+	"version": "2.4.1",
 	"minAppVersion": "1.0.3",
-	"description": "Hide secrets in your vault",
-	"author": "meld-cp",
-	"authorUrl": "https://github.com/meld-cp/obsidian-encrypt",
+	"description": "Modified original meld-encrypt to support folder encryption",
+	"author": "VII FIRM",
+	"authorUrl": "https://github.com/viifirm/obsidian-encrypt.git",
 	"isDesktopOnly": false,
 	"fundingUrl": {
-		"Buy Me a Coffee": "https://www.buymeacoffee.com/cleon",
-		"GitHub Sponsor": "https://github.com/sponsors/meld-cp"
+		
 	}
 }
