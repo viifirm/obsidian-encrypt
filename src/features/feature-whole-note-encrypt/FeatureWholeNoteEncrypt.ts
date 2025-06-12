@@ -1,7 +1,7 @@
 import MeldEncrypt from "src/main";
 import { IMeldEncryptPluginFeature } from "../IMeldEncryptPluginFeature";
 import { EncryptedMarkdownView } from "./EncryptedMarkdownView";
-import { MarkdownView, TFolder, normalizePath, moment, TFile } from "obsidian";
+import { MarkdownView, Notice,TFolder, normalizePath, moment, TFile } from "obsidian";
 import PluginPasswordModal from "src/PluginPasswordModal";
 import { IPasswordAndHint, SessionPasswordService } from "src/services/SessionPasswordService";
 import { FileDataHelper, JsonFileEncoding } from "src/services/FileDataHelper";
@@ -37,6 +37,20 @@ export default class FeatureWholeNoteEncryptV2 implements IMeldEncryptPluginFeat
 							.setTitle('New encrypted note')
 							.setIcon('file-lock-2')
 							.onClick( () => this.processCreateNewEncryptedNoteCommand( file ) );
+						}
+					);
+					menu.addItem( (item) => {
+						item
+							.setTitle('Encrypt folder')
+							.setIcon('lock')
+							.onClick( async () => await this.processEncryptFolderCommand(file) );
+						}
+					);
+					menu.addItem( (item) => {
+						item
+							.setTitle('Decrypt folder')
+							.setIcon('unlock')
+							.onClick( async () => await this.processDecryptFolderCommand(file) );
 						}
 					);
 				}
@@ -211,6 +225,86 @@ export default class FeatureWholeNoteEncryptV2 implements IMeldEncryptPluginFeat
 		const leaf = this.plugin.app.workspace.getLeaf( true );
 		await leaf.openFile( file );
 
+	}
+
+	private async processEncryptFolderCommand(folder: TFolder): Promise<void> {
+		const files = this.plugin.app.vault.getFiles().filter(f => 
+			f.path.startsWith(folder.path) && 
+			!ENCRYPTED_FILE_EXTENSIONS.includes(f.extension)
+		);
+
+		const pwm = new PluginPasswordModal(
+			this.plugin.app,
+			'Please provide a password for encryption',
+			true,
+			true,
+			{ password: '', hint: '' }
+		);
+		
+		let pwh: IPasswordAndHint;
+		try {
+			pwh = await pwm.openAsync();
+		} catch(e) {
+			return; // cancelled
+		}
+
+		for (const file of files) {
+			try {
+				const content = await this.plugin.app.vault.read(file);
+				const fileData = await FileDataHelper.encrypt(pwh.password, pwh.hint, content);
+				const fileContents = JsonFileEncoding.encode(fileData);
+				const newPath = file.path + '.' + ENCRYPTED_FILE_EXTENSION_DEFAULT;
+				await this.plugin.app.vault.rename(file, newPath);
+				await this.plugin.app.vault.modify(file, fileContents);
+				SessionPasswordService.putByFile(pwh, file);
+			} catch(e) {
+				console.error(`Failed to encrypt file ${file.path}:`, e);
+			}
+		}
+
+		new Notice( '🔐 All Notes under the folder were encrypted 🔓' );
+	}
+
+	private async processDecryptFolderCommand(folder: TFolder): Promise<void> {
+		const files = this.plugin.app.vault.getFiles().filter(f => 
+			f.path.startsWith(folder.path) && 
+			ENCRYPTED_FILE_EXTENSIONS.includes(f.extension)
+		);
+
+		// prompt for password
+		const pwm = new PluginPasswordModal(
+			this.plugin.app,
+			'Please provide password for decryption',
+			false,
+			false,
+			{ password: '', hint: '' }
+		);
+		
+		let pwh: IPasswordAndHint;
+		try {
+			pwh = await pwm.openAsync();
+		} catch(e) {
+			return; // cancelled
+		}
+
+		for (const file of files) {
+			try {
+				const content = await this.plugin.app.vault.read(file);
+				const fileData = JsonFileEncoding.decode(content);
+				const decrypted = await FileDataHelper.decrypt(fileData, pwh.password);
+				
+				const newPath = file.path.replace(/\.\w+$/, '');
+				await this.plugin.app.vault.rename(file, newPath);
+				// 由于 decrypted 可能为 null，这里做一个非空检查，确保传递给 vault.modify 的参数是 string 类型
+				if (decrypted !== null) {
+					await this.plugin.app.vault.modify(file, decrypted);
+				}
+			} catch(e) {
+				console.error(`Failed to decrypt file ${file.path}:`, e);
+			}
+		}
+
+		new Notice( '🔐 All Notes under the folder were decrypted 🔓' );
 	}
 
 	onunload() {
