@@ -230,6 +230,7 @@ export default class FeatureWholeNoteEncryptV2 implements IMeldEncryptPluginFeat
 	private async processEncryptFolderCommand(folder: TFolder): Promise<void> {
 		const files = this.plugin.app.vault.getFiles().filter(f => 
 			f.path.startsWith(folder.path) && 
+			f.extension === 'md' &&
 			!ENCRYPTED_FILE_EXTENSIONS.includes(f.extension)
 		);
 
@@ -268,6 +269,7 @@ export default class FeatureWholeNoteEncryptV2 implements IMeldEncryptPluginFeat
 	private async processDecryptFolderCommand(folder: TFolder): Promise<void> {
 		const files = this.plugin.app.vault.getFiles().filter(f => 
 			f.path.startsWith(folder.path) && 
+			f.extension === 'mdenc' &&
 			ENCRYPTED_FILE_EXTENSIONS.includes(f.extension)
 		);
 

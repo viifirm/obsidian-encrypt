@@ -4,7 +4,7 @@
 	"version": "2.4.1",
 	"minAppVersion": "1.0.3",
 	"description": "Modified original meld-encrypt to support folder encryption",
-	"author": "VII FIRM",
+	"author": "VIIFIRM",
 	"authorUrl": "https://github.com/viifirm/obsidian-encrypt.git",
 	"isDesktopOnly": false,
 	"fundingUrl": {
